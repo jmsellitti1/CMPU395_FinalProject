@@ -1,18 +1,23 @@
-from pybaseball import statcast, statcast_batter, retrosheet
+from pybaseball import statcast
 import pandas as pd
 import csv
 from io import StringIO
 import datetime
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
 
-# LOAD STATCAST DATA FOR EVERY PITCH ON 5/1/2025
-# data = statcast('2025-05-01')
-# data.to_csv('statcast_data.csv', index=False)
-
-# LOAD 10 PLAYERS' BATTING STATS FOR 2025 SEASON
-# for i in range(10):
-#     player_id = data['batter'].unique()[i]
-#     batting_stats = statcast_batter('2025-01-01', '2025-12-31', player_id)
-#     batting_stats.to_csv(f'playerStats/{player_id}_batting_stats.csv', index=False)
+# LOAD STATCAST DATA FOR 2025 SEASON
+season_2025 = statcast('2025-01-01', '2025-12-31')
+# Only get regular season events where something happened (not just a ball or strike)
+season_2025_events = season_2025[season_2025['events'].notna()]
+season_2025_events = season_2025_events[season_2025_events['game_type'] == 'R']
+# Filter by batters who had more than 250 plate appearances (~1.5 per game)
+data = season_2025_events[season_2025_events['batter'].isin(
+    season_2025_events['batter'].value_counts()[season_2025_events['batter'].value_counts() > 250].index)]
+data = data.sort_values(by=['batter', 'game_date'])
+data.to_parquet('data/season_2025.parquet', index=False)
+data.head(50).to_csv('data/season_2025_preview.csv', index=False) #For testing + visualization purposes
+print("Statcast data saved to season_2025.parquet")
 
 # LOAD GAME DATA TO PARSE BATTING ORDERS
 with open('data/gl2025.txt', 'r') as file:
@@ -37,3 +42,4 @@ for game in parsed:
 
 lineups = pd.DataFrame(rows)
 lineups.to_csv('data/lineups.csv', index=False)
+print("Lineups saved to lineups.csv")
