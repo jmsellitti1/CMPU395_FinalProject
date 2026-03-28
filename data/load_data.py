@@ -40,8 +40,8 @@ for game in parsed:
     away_lineup = []
     home_lineup = []
     for i in range(9):
-        away_lineup.append(game[106 + i*3])
-        home_lineup.append(game[133 + i*3])
+        away_lineup.append(game[105 + i*3])
+        home_lineup.append(game[132 + i*3])
     date = datetime.datetime.strptime(game[0], '%Y%m%d').strftime('%Y-%m-%d')
     rows.append({
         'date': date,
