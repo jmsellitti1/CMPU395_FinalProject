@@ -7,6 +7,15 @@ events = pd.read_parquet('data/season_2025.parquet')
 lineups = pd.read_csv('data/lineups.csv')
 features_df = []
 
+def get_lineup_pos(batter_id, lineups, side):
+    for _, row in lineups.iterrows():
+        lineup = row[side]
+        if isinstance(lineup, str):
+            lineup = ast.literal_eval(lineup)
+        if batter_id in lineup:
+            return lineup.index(batter_id) + 1
+    return np.nan
+
 for player_id, group in tqdm(events.groupby('batter'), desc="Calculating features"):
     group = group.sort_values('game_date').copy()
 
@@ -65,24 +74,22 @@ for player_id, group in tqdm(events.groupby('batter'), desc="Calculating feature
     c_xwoba = group['xwoba_est'].cumsum().shift(1).fillna(0)
     group['xwOBA'] = safe_div(c_xwoba, c_pa)
     
-    # Fetch lineup position (per game)
+    # Fetch lineup position
     group['lineup_pos'] = np.nan
+    # Iterate through all games for that player
     for gdate in group['game_date'].unique():
         mask = group['game_date'] == gdate
         game_date_str = pd.to_datetime(gdate).strftime('%Y-%m-%d')
         batter_id = group.loc[mask, 'batter'].iloc[0]
         side = 'away_lineup' if group.loc[mask, 'inning_topbot'].iloc[0] == 'Top' else 'home_lineup'
-        for _, row in lineups[lineups['date'] == game_date_str].iterrows():
-            lineup = row[side]
-            if isinstance(lineup, str):
-                lineup = ast.literal_eval(lineup)
-            if batter_id in lineup:
-                group.loc[mask, 'lineup_pos'] = lineup.index(batter_id) + 1
-                break
-
+        lineup_pos = get_lineup_pos(batter_id, lineups[lineups['date'] == game_date_str], side)
+        group.loc[mask, 'lineup_pos'] = lineup_pos
+    
     # Final features
     group = group[['game_date', 'batter', 'AVG', 'SLG', 'OBP', 'HR', 'xwOBA', 'K%', 'BB%', 'Contact%', 'SweetSpot%', 'HardHit%', 'lineup_pos']]
     group = group.groupby('game_date').first().reset_index()
+    # Remove any rows where lineup_pos is not found - pinch hitters
+    group = group[group['lineup_pos'].notna()]
     features_df.append(group)
 
 features_df = pd.concat(features_df)
