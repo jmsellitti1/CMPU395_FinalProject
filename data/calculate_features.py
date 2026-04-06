@@ -74,6 +74,8 @@ for player_id, group in tqdm(events.groupby('batter'), desc="Calculating feature
     c_xwoba = group['xwoba_est'].cumsum().shift(1).fillna(0)
     group['xwOBA'] = safe_div(c_xwoba, c_pa)
     
+    group['team'] = group['away_team'].where(group['inning_topbot'] == 'Top', group['home_team'])
+
     # Fetch lineup position
     group['lineup_pos'] = np.nan
     # Iterate through all games for that player
@@ -86,7 +88,7 @@ for player_id, group in tqdm(events.groupby('batter'), desc="Calculating feature
         group.loc[mask, 'lineup_pos'] = lineup_pos
     
     # Final features
-    group = group[['game_date', 'batter', 'AVG', 'SLG', 'OBP', 'HR', 'xwOBA', 'K%', 'BB%', 'Contact%', 'SweetSpot%', 'HardHit%', 'lineup_pos']]
+    group = group[['game_date', 'batter', 'team', 'AVG', 'SLG', 'OBP', 'HR', 'xwOBA', 'K%', 'BB%', 'Contact%', 'SweetSpot%', 'HardHit%', 'lineup_pos']]
     group = group.groupby('game_date').first().reset_index()
     # Remove any rows where lineup_pos is not found - pinch hitters
     group = group[group['lineup_pos'].notna()]
