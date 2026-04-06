@@ -90,6 +90,8 @@ for player_id, group in tqdm(events.groupby('batter'), desc="Calculating feature
     # Final features
     group = group[['game_date', 'batter', 'team', 'AVG', 'SLG', 'OBP', 'HR', 'xwOBA', 'K%', 'BB%', 'Contact%', 'SweetSpot%', 'HardHit%', 'lineup_pos']]
     group = group.groupby('game_date').first().reset_index()
+    # Drop first 30 games of season to allow for normalization of features
+    group = group.iloc[30:]
     # Remove any rows where lineup_pos is not found - pinch hitters
     group = group[group['lineup_pos'].notna()]
     features_df.append(group)
