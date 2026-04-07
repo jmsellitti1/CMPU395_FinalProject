@@ -41,13 +41,15 @@ y_val_tensor = torch.tensor(y_val, dtype=torch.long)
 class LineupModel(nn.Module):
     def __init__(self, input_dim):
         super().__init__()
-        self.fc1 = nn.Linear(input_dim, 64)
-        self.fc2 = nn.Linear(64, 32)
+        self.fc1 = nn.Linear(input_dim, 128)
+        self.fc2 = nn.Linear(128, 64)
+        self.fc3 = nn.Linear(64, 32)
         self.out = nn.Linear(32, 9)
     
     def forward(self, x):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
+        x = F.relu(self.fc3(x))
         return self.out(x) # logits
 
 model = LineupModel(X.shape[1])
@@ -56,7 +58,7 @@ criterion = nn.CrossEntropyLoss()
 
 num_epochs = 2000
 patience = 20
-min_delta = 1e-3  # require meaningful improvement
+min_delta = 1e-3 # require meaningful improvement
 best_val_loss = float('inf')
 counter = 0
 best_model_state = None
@@ -121,7 +123,7 @@ final_df = pd.concat([metadata, probs_df], axis=1)
     
 # Overwrite file every run
 final_df.to_parquet("data/model_probs.parquet", index=False)
-final_df[:50].to_csv("data/model_probs_preview.csv", index=False) # this clears + rewrites automatically
+final_df[:50].to_csv("data/model_probs_preview.csv", index=False)
 print("Model probabilities saved to model_probs.parquet")
 
 # Final Model Evaluation
