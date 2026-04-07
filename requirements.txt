@@ -3,3 +3,4 @@ numpy
 tqdm
 pybaseball
 scikit-learn
+torch
