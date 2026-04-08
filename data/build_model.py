@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from scipy.optimize import linear_sum_assignment
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -74,6 +75,7 @@ class LineupModel(nn.Module):
         return logits
 
 model = LineupModel(X.shape[1])
+torch.save(model.state_dict(), "data/lineup_model.pth")
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 criterion = nn.BCEWithLogitsLoss()
 
