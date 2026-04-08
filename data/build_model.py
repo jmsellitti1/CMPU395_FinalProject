@@ -75,12 +75,11 @@ class LineupModel(nn.Module):
         return logits
 
 model = LineupModel(X.shape[1])
-torch.save(model.state_dict(), "data/lineup_model.pth")
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 criterion = nn.BCEWithLogitsLoss()
 
-num_epochs = 250
-patience = 20
+num_epochs = 200
+patience = 5
 min_delta = 1e-3
 best_val_loss = float('inf')
 counter = 0
@@ -192,3 +191,50 @@ print(f"R^2: {r2_score(all_true, all_preds):.4f}")
 
 within_1 = np.mean(np.abs(all_preds - all_true) <= 1)
 print(f"Within ±1 Accuracy: {within_1:.4f}")
+
+#Predict team lineup
+teams = df.groupby(['team', 'game_date'])
+
+def get_position_probs(logits):
+    thresholds = torch.sort(model.thresholds)[0]
+    cum_probs = torch.sigmoid(logits - thresholds)
+    probs = torch.zeros(9)
+    probs[0] = cum_probs[0]  # P(Y=1)
+    for i in range(1, 8):
+        probs[i] = cum_probs[i] - cum_probs[i-1]
+    probs[8] = 1 - cum_probs[7]  # P(Y=9)
+    return probs.detach().numpy()
+
+def predict_lineup(player_features):
+    if player_features.shape[0] != 9:
+        return None
+    
+    # Normalize features
+    player_features = scaler.transform(player_features)
+    X_tensor = torch.tensor(player_features, dtype=torch.float32)
+    
+    with torch.no_grad():
+        logits = model(X_tensor)
+        prob_matrix = np.array([get_position_probs(logits[i]) for i in range(9)])
+    
+    cost_matrix = -prob_matrix
+    row_ind, col_ind = linear_sum_assignment(cost_matrix)
+    assignment = {row: col + 1 for row, col in zip(row_ind, col_ind)}
+    return assignment
+
+scores = {i: 0 for i in range(0, 9)}
+total = 0
+for (team, date), group in tqdm(teams, desc="Predicting Lineups"):
+    player_features = group[feature_cols].values
+    lineup = predict_lineup(player_features)
+    if lineup is None:
+        continue
+    total += 1
+    true_positions = group['lineup_pos'].values
+    predicted_positions = [lineup[i] for i in range(9)]
+    for true_pos, pred_pos in zip(true_positions, predicted_positions):
+        if true_pos == pred_pos:
+            scores[true_pos-1] += 1
+print("\nPosition-wise accuracy:")
+for pos in range(0, 9):
+    print(f"Position {pos+1}: {scores[pos]/total*100:.2f}%")
