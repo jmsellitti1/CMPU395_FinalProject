@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GroupShuffleSplit
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from scipy.optimize import linear_sum_assignment
@@ -23,9 +23,15 @@ X = df[feature_cols].values
 y = df['lineup_pos'].astype(int).values
 
 # train / validation split
-X_train, X_val, y_train, y_val = train_test_split(
-    X, y, test_size=0.2, random_state=42, stratify=y
-)
+
+# Create groups to ensure all 9 players from a single game stay together in the same split
+df['game_id'] = df['team'] + "_" + df['game_date'].astype(str)
+gss = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
+train_idx, val_idx = next(gss.split(X, y, groups=df['game_id']))
+
+X_train, X_val = X[train_idx], X[val_idx]
+y_train, y_val = y[train_idx], y[val_idx]
+val_df = df.iloc[val_idx].copy()
 
 # feature normalization
 scaler = StandardScaler()
@@ -205,13 +211,18 @@ def create_teams_df(df, feature_cols):
 teams_df = create_teams_df(df, feature_cols)
 
 def get_position_probs(logits):
-    thresholds = torch.sort(model.thresholds)[0]
-    cum_probs = torch.sigmoid(logits - thresholds)
+    # Logits already represent (base - thresholds) from the forward pass.
+    # The Dataset encoding uses ordinal[:y-1] = 1, meaning logits[k] targets P(pos > k+1)
+    s = torch.sigmoid(logits)
     probs = torch.zeros(9)
-    probs[0] = cum_probs[0]  # P(Y=1)
+    
+    # P(pos=1) = 1 - P(pos > 1)
+    probs[0] = 1 - s[0]
     for i in range(1, 8):
-        probs[i] = cum_probs[i] - cum_probs[i-1]
-    probs[8] = 1 - cum_probs[7]  # P(Y=9)
+        # P(pos=i+1) = P(pos > i) - P(pos > i+1)
+        probs[i] = s[i-1] - s[i]
+    # P(pos=9) = P(pos > 8)
+    probs[8] = s[7]
     return probs.detach().numpy()
 
 def predict_lineup(player_ids, player_features):

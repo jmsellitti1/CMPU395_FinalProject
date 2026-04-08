@@ -97,6 +97,10 @@ for player_id, group in tqdm(events.groupby('batter'), desc="Calculating feature
     features_df.append(group)
 
 features_df = pd.concat(features_df)
+
+# Only keep games where we have exactly 9 players for a team to ensure valid lineup groupings
+features_df = features_df.groupby(['team', 'game_date']).filter(lambda x: len(x) == 9)
+
 features_df.rename(columns={'batter': 'player_id'}, inplace=True)
 features_df = features_df.sort_values(['game_date', 'team'])
 features_df.to_parquet('data/features.parquet', index=False)
