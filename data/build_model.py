@@ -127,11 +127,10 @@ for epoch in tqdm(range(num_epochs), desc="Training Model"):
         print(f"\nEarly stopping at epoch {epoch}")
         break
 
-    if epoch % 10 == 9:
-        epoch_losses[epoch+1] = {
-            'train_loss': train_loss,
-            'val_loss': val_loss
-        }
+    epoch_losses[epoch+1] = {
+        'train_loss': train_loss,
+        'val_loss': val_loss
+    }
 
 # Plot training and validation loss
 epochs = list(epoch_losses.keys())
