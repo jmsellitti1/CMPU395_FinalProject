@@ -1,8 +1,8 @@
 team,player_id,game_date,predicted_lineup_pos,true_lineup_pos
-WSH,abrac001,2025-05-15,1,1
+WSH,abrac001,2025-05-15,2,1
 WSH,abrac001,2025-05-16,1,1
 WSH,abrac001,2025-05-17,1,1
-WSH,abrac001,2025-05-18,2,1
+WSH,abrac001,2025-05-18,1,1
 WSH,abrac001,2025-05-20,2,1
 WSH,abrac001,2025-05-22,1,1
 WSH,abrac001,2025-05-23,1,1
@@ -23,9 +23,9 @@ WSH,abrac001,2025-06-10,2,1
 WSH,abrac001,2025-06-11,1,1
 WSH,abrac001,2025-06-12,1,1
 WSH,abrac001,2025-06-13,1,1
-WSH,abrac001,2025-06-14,2,1
-WSH,abrac001,2025-06-15,3,3
-WSH,abrac001,2025-06-16,4,3
+WSH,abrac001,2025-06-14,1,1
+WSH,abrac001,2025-06-15,2,3
+WSH,abrac001,2025-06-16,3,3
 WSH,abrac001,2025-06-17,2,1
 WSH,abrac001,2025-06-18,1,1
 WSH,abrac001,2025-06-19,1,1
