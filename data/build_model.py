@@ -79,7 +79,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 criterion = nn.BCEWithLogitsLoss()
 
 num_epochs = 200
-patience = 5
+patience = 20
 min_delta = 1e-3
 best_val_loss = float('inf')
 counter = 0
@@ -193,7 +193,16 @@ within_1 = np.mean(np.abs(all_preds - all_true) <= 1)
 print(f"Within ±1 Accuracy: {within_1:.4f}")
 
 #Predict team lineup
-teams = df.groupby(['team', 'game_date'])
+def create_teams_df(df, feature_cols):
+    def make_lineup(group):
+        if len(group) != 9:
+            return None
+        return {row['player_id']: row[feature_cols].tolist() for _, row in group.iterrows()}
+    
+    teams_df = df.groupby(['team', 'game_date']).apply(make_lineup, include_groups=False).dropna().reset_index(name='lineup')
+    return teams_df
+
+teams_df = create_teams_df(df, feature_cols)
 
 def get_position_probs(logits):
     thresholds = torch.sort(model.thresholds)[0]
@@ -205,11 +214,10 @@ def get_position_probs(logits):
     probs[8] = 1 - cum_probs[7]  # P(Y=9)
     return probs.detach().numpy()
 
-def predict_lineup(player_features):
-    if player_features.shape[0] != 9:
+def predict_lineup(player_ids, player_features):
+    if len(player_ids) != 9 or player_features.shape[0] != 9:
         return None
     
-    # Normalize features
     player_features = scaler.transform(player_features)
     X_tensor = torch.tensor(player_features, dtype=torch.float32)
     
@@ -220,21 +228,20 @@ def predict_lineup(player_features):
     cost_matrix = -prob_matrix
     row_ind, col_ind = linear_sum_assignment(cost_matrix)
     assignment = {row: col + 1 for row, col in zip(row_ind, col_ind)}
-    return assignment
+    
+    predicted_lineup = [None] * 9
+    for idx, pos in assignment.items():
+        predicted_lineup[pos - 1] = player_ids[idx]
+    return predicted_lineup
 
-scores = {i: 0 for i in range(0, 9)}
-total = 0
-for (team, date), group in tqdm(teams, desc="Predicting Lineups"):
-    player_features = group[feature_cols].values
-    lineup = predict_lineup(player_features)
-    if lineup is None:
-        continue
-    total += 1
-    true_positions = group['lineup_pos'].values
-    predicted_positions = [lineup[i] for i in range(9)]
-    for true_pos, pred_pos in zip(true_positions, predicted_positions):
-        if true_pos == pred_pos:
-            scores[true_pos-1] += 1
-print("\nPosition-wise accuracy:")
-for pos in range(0, 9):
-    print(f"Position {pos+1}: {scores[pos]/total*100:.2f}%")
+predicted_lineups = []
+for _, row in tqdm(teams_df.iterrows(), desc="Predicting Lineups", total=len(teams_df)):
+    lineup_dict = row['lineup']
+    player_ids = list(lineup_dict.keys())
+    features = np.array([lineup_dict[pid] for pid in player_ids])
+    pred_lineup = predict_lineup(player_ids, features)
+    predicted_lineups.append(pred_lineup)
+
+teams_df['predicted_lineup'] = predicted_lineups
+
+teams_df[:100].to_csv("data/predicted_lineups_preview.csv", index=False)

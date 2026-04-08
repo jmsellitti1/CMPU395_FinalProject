@@ -89,15 +89,16 @@ for player_id, group in tqdm(events.groupby('batter'), desc="Calculating feature
     
     # Final features
     group = group[['game_date', 'batter', 'team', 'AVG', 'SLG', 'OBP', 'HR', 'xwOBA', 'K%', 'BB%', 'Contact%', 'SweetSpot%', 'HardHit%', 'lineup_pos']]
-    group = group.groupby('game_date').first().reset_index()
-    # Drop first 30 games of season to allow for normalization of features
-    group = group.iloc[30:]
+    # Drop first 10 games of season to allow for normalization of features
+    group = group.iloc[10:]
     # Remove any rows where lineup_pos is not found - pinch hitters
     group = group[group['lineup_pos'].notna()]
+    group = group.groupby('game_date').first().reset_index()
     features_df.append(group)
 
 features_df = pd.concat(features_df)
 features_df.rename(columns={'batter': 'player_id'}, inplace=True)
+features_df = features_df.sort_values(['game_date', 'team'])
 features_df.to_parquet('data/features.parquet', index=False)
 features_df.head(50).to_csv('data/features_preview.csv', index=False)
 print("Features saved to features.parquet")
