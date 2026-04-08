@@ -1,1 +1,1 @@
-data/model_preds.parquet
+**/*.parquet
