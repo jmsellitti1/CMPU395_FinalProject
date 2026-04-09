@@ -1,5 +1,5 @@
-from pybaseball import statcast, playerid_reverse_lookup
 import pandas as pd
+from pybaseball import statcast, playerid_reverse_lookup
 import csv
 from io import StringIO
 import datetime
@@ -7,13 +7,13 @@ import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 # LOAD STATCAST DATA FOR 2025 SEASON
-season_2025 = statcast('2025-01-01', '2025-12-31')
+season_2025 = statcast('2025-03-01', '2025-12-01')
 # Only get regular season events where something happened (not just a ball or strike)
 season_2025_events = season_2025[season_2025['events'].notna()]
 season_2025_events = season_2025_events[season_2025_events['game_type'] == 'R']
-# Filter by batters who had more than 250 plate appearances (~1.5 per game)
+# Filter by batters who had more than 150 total plate appearances (~1 per game)
 data = season_2025_events[season_2025_events['batter'].isin(
-    season_2025_events['batter'].value_counts()[season_2025_events['batter'].value_counts() > 250].index)].copy()
+    season_2025_events['batter'].value_counts()[season_2025_events['batter'].value_counts() > 150].index)].copy()
 
 # Convert MLB IDs to Retrosheet IDs for easier lineup merging
 unique_players = data['batter'].dropna().unique().tolist()
@@ -23,9 +23,10 @@ mlb_to_retro = dict(zip(player_map['key_mlbam'], player_map['key_retro']))
 data['batter'] = data['batter'].map(mlb_to_retro)
 data = data[data['batter'].notna()]
 
-data = data.sort_values(by=['batter', 'game_date'])
+# Sort by date, team, and inning (assending)
+data = data.sort_values(by=['game_date', 'home_team', 'inning'])
 data.to_parquet('data/season_2025.parquet', index=False)
-data.head(50).to_csv('data/season_2025_preview.csv', index=False) #For testing + visualization purposes
+data[:100].to_csv('data/season_2025_preview.csv', index=False)
 print("Statcast data saved to season_2025.parquet")
 
 # LOAD GAME DATA TO PARSE BATTING ORDERS
