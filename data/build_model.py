@@ -254,16 +254,6 @@ for _, row in tqdm(teams_df.iterrows(), desc="Predicting Lineups", total=len(tea
     predicted_lineups.append(pred_lineup)
 
 teams_df['predicted_lineup'] = predicted_lineups
+teams_df['lineup'] = teams_df['lineup'].apply(lambda d: list(d.keys()))
+teams_df.to_parquet("data/predicted_lineups.parquet", index=False)
 teams_df[:100].to_csv("data/predicted_lineups_preview.csv", index=False)
-
-# Measure accuracy for each lineup position
-scores = {i: 0 for i in range(1, 10)}
-for _, row in teams_df.iterrows():
-    true_lineup = list(row['lineup'].keys())
-    pred_lineup = row['predicted_lineup']
-    for pos in range(1, 10):
-        if true_lineup[pos-1] == pred_lineup[pos-1]:
-            scores[pos] += 1
-print("Lineup Position Accuracy:")
-for pos in range(1, 10):
-    print(f"Position {pos}: {scores[pos] / len(teams_df)*100:.4f}")
