@@ -7,13 +7,13 @@ import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 # LOAD STATCAST DATA FOR 2025 SEASON
-season_2025 = statcast('2025-03-01', '2025-12-01')
+season_2025 = statcast('2025-03-01', '2025-11-01')
 # Only get regular season events where something happened (not just a ball or strike)
 season_2025_events = season_2025[season_2025['events'].notna()]
 season_2025_events = season_2025_events[season_2025_events['game_type'] == 'R']
-# Filter by batters who had more than 150 total plate appearances (~1 per game)
+# Filter by batters who had more than 100 total plate appearances
 data = season_2025_events[season_2025_events['batter'].isin(
-    season_2025_events['batter'].value_counts()[season_2025_events['batter'].value_counts() > 150].index)].copy()
+    season_2025_events['batter'].value_counts()[season_2025_events['batter'].value_counts() > 100].index)].copy()
 
 # Convert MLB IDs to Retrosheet IDs for easier lineup merging
 unique_players = data['batter'].dropna().unique().tolist()
