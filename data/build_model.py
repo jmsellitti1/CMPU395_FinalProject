@@ -190,13 +190,16 @@ with torch.no_grad():
 all_preds = np.array(all_preds)
 all_true = np.array(all_true)
 
-print("Final Model Evaluation:")
-print(f"MSE: {mean_squared_error(all_true, all_preds):.4f}")
-print(f"MAE: {mean_absolute_error(all_true, all_preds):.4f}")
-print(f"R^2: {r2_score(all_true, all_preds):.4f}")
-
-within_1 = np.mean(np.abs(all_preds - all_true) <= 1)
-print(f"Within ±1 Accuracy: {within_1:.4f}")
+model_output = f"""
+Final Model Evaluation:
+MSE: {mean_squared_error(all_true, all_preds):.4f}
+MAE: {mean_absolute_error(all_true, all_preds):.4f}
+R^2: {r2_score(all_true, all_preds):.4f}
+Within ±1 Accuracy: {np.mean(np.abs(all_preds - all_true) <= 1):.4f}
+"""
+print(model_output)
+with open("data/model_evaluation.txt", "w") as f:
+    f.write(model_output)
 
 #Predict team lineup
 def create_teams_df(df, feature_cols):
