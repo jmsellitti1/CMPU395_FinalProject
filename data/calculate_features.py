@@ -57,6 +57,7 @@ for player_id, group in tqdm(events.groupby('batter'), desc="Calculating feature
     group['HR'] = c_hr
     group['K%'] = safe_div(c_k, c_pa)
     group['BB%'] = safe_div(c_bb, c_pa)
+    group['K/BB'] = safe_div(c_k, c_bb)
     group['Contact%'] = safe_div((c_pa - c_k), c_pa)
     group['sweet_spot'] = (group['launch_angle'].between(8, 32).fillna(False) & group['is_bip'].astype(bool)).astype(int)
     c_sweet = group['sweet_spot'].cumsum().shift(1).fillna(0)
@@ -88,7 +89,7 @@ for player_id, group in tqdm(events.groupby('batter'), desc="Calculating feature
         group.loc[mask, 'lineup_pos'] = lineup_pos
     
     # Final features
-    group = group[['game_date', 'batter', 'team', 'AVG', 'SLG', 'OBP', 'HR', 'xwOBA', 'K%', 'BB%', 'Contact%', 'SweetSpot%', 'HardHit%', 'lineup_pos']]
+    group = group[['game_date', 'batter', 'team', 'AVG', 'SLG', 'OBP', 'HR', 'xwOBA', 'K%', 'BB%', 'K/BB', 'Contact%', 'SweetSpot%', 'HardHit%', 'lineup_pos']]
     # Remove any rows where lineup_pos is not found - pinch hitters
     group = group[group['lineup_pos'].notna()]
     # Only keep one row per player per game
