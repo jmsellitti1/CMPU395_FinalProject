@@ -1,12 +1,25 @@
 PLAYER MODEL:
-Exact Accuracy: 0.5319
-Top-3 Accuracy (Actual position in top 3 predicted positions): 0.8585
-MAE: 0.8827
+Exact Accuracy: 0.5315
+Top-3 Accuracy (Actual position in top 3 predicted positions): 0.8482
+MAE: 0.8888
 
 TEAM MODEL:
 Exact Match %: 0.1683
-Avg Displacement/Position Error: 0.7246
-Pairwise Accuracy (Predicting which player in each pair of 2 bats before the other): 0.8807
+Avg Displacement/Position Error: 0.7026
+Pairwise Accuracy (Predicting which player in each pair of 2 bats before the other): 0.8861
+
+Feature Importances:
+HardHit%: 0.7046
+HR: 0.6047
+BB%: 0.5842
+OBP: 0.5767
+SLG: 0.5304
+SweetSpot%: 0.4662
+xwOBA: 0.4205
+AVG: 0.4086
+K%: 0.4048
+Contact%: 0.3888
+K/BB: 0.3269
 
 Lineup Position Accuracy:
 Position 1: 16.32%

@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import GroupShuffleSplit
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import mean_absolute_error
 from scipy.optimize import linear_sum_assignment
 import torch
 import torch.nn as nn
@@ -260,6 +261,22 @@ team_exact = exact_match / len(val_team_dataset)
 team_disp = np.mean(displacements)
 team_pairwise = np.mean(pairwise_scores)
 
+def evaluate_model(X, y):
+    with torch.no_grad():
+        logits, _ = player_model(torch.tensor(X, dtype=torch.float32))
+        preds = torch.argmax(logits, dim=1).numpy()
+    return mean_absolute_error(y, preds)
+base_mae = evaluate_model(X_val, y_val)
+importances = []
+for i, col in enumerate(feature_cols):
+    X_perm = X_val.copy()
+    np.random.shuffle(X_perm[:, i])
+
+    perm_mae = evaluate_model(X_perm, y_val)
+    importance = perm_mae - base_mae
+    importances.append((col, importance))
+importances.sort(key=lambda x: x[1], reverse=True)
+
 output = f"""PLAYER MODEL:
 Exact Accuracy: {player_top1:.4f}
 Top-3 Accuracy (Actual position in top 3 predicted positions): {player_top3:.4f}
@@ -268,7 +285,10 @@ MAE: {player_mae:.4f}
 TEAM MODEL:
 Exact Match %: {team_exact:.4f}
 Avg Displacement/Position Error: {team_disp:.4f}
-Pairwise Accuracy (Predicting which player in each pair of 2 bats before the other): {team_pairwise:.4f}"""
+Pairwise Accuracy (Predicting which player in each pair of 2 bats before the other): {team_pairwise:.4f}\n
+Feature Importances:\n"""
+for feat, imp in importances:
+    output += f"{feat}: {imp:.4f}\n"
 print(output)
 with open("data/model_evaluation.txt", "w") as f:
     f.write(output)
