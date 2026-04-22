@@ -9,7 +9,7 @@ for _, row in teams_df.iterrows():
     for pos in range(1, 10):
         if row['lineup'][pos-1] == pred_lineup[pos-1]:
             scores[pos] += 1
-output += "\nLineup Position Accuracy:\n"
+output += "\n\nLineup Position Accuracy:\n"
 for pos in range(1, 10):
     output += f"Position {pos}: {scores[pos] / len(teams_df)*100:.2f}%\n"
     
