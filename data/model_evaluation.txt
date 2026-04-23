@@ -1,45 +1,47 @@
 PLAYER MODEL:
-Exact Accuracy: 0.5315
-Top-3 Accuracy (Actual position in top 3 predicted positions): 0.8482
+Exact Accuracy: 0.5400
+Top-3 Accuracy (Actual position in top 3 predicted positions): 0.8529
 MAE: 0.8888
 
 TEAM MODEL:
-Exact Match %: 0.1683
-Avg Displacement/Position Error: 0.7026
-Pairwise Accuracy (Predicting which player in each pair of 2 bats before the other): 0.8861
+Exact Match %: 0.1452
+Avg Displacement/Position Error: 0.6865
+Pairwise Accuracy (Predicting which player in each pair of 2 bats before the other): 0.8892
 
 Feature Importances:
-HardHit%: 0.7046
-HR: 0.6047
-BB%: 0.5842
-OBP: 0.5767
-SLG: 0.5304
-SweetSpot%: 0.4662
-xwOBA: 0.4205
-AVG: 0.4086
-K%: 0.4048
-Contact%: 0.3888
-K/BB: 0.3269
+HardHit%: 0.7693
+BB%: 0.6382
+SLG: 0.5685
+xwOBA: 0.5305
+OBP: 0.5229
+HR: 0.5227
+SweetSpot%: 0.4829
+Contact%: 0.4372
+K%: 0.4192
+AVG: 0.3682
+K/BB: 0.3342
+
+Overall Player Placement Accuracy: 1720/2727 (63.07%)
 
 Lineup Position Accuracy:
-Position 1: 16.32%
-Position 2: 5.73%
-Position 3: 11.73%
-Position 4: 11.19%
-Position 5: 12.39%
-Position 6: 13.79%
-Position 7: 7.46%
-Position 8: 11.46%
-Position 9: 12.72%
+Position 1: 83.50%
+Position 2: 78.55%
+Position 3: 74.26%
+Position 4: 68.98%
+Position 5: 53.14%
+Position 6: 45.21%
+Position 7: 40.59%
+Position 8: 50.50%
+Position 9: 72.94%
 
 Confusion Matrix: True Position (Rows) vs Predicted Position (Columns):
      1    2    3    4    5    6    7    8    9
-1  245  195  208  185  182  148  140   98  100
-2  161   86  159  163  176  211  200  190  155
-3  224  122  176  190  130  154  161  159  185
-4  178  132  158  168  165  149  188  202  161
-5   92  132  162  178  186  190  190  201  170
-6   90  242  203  139  180  207  150  131  159
-7  126  272  184  185  145  137  112  158  182
-8  142  146  132  145  206  157  203  172  198
-9  243  174  119  148  131  148  157  190  191
+1  253   13    9    0    9    9    5    2    3
+2   17  238   13   11    8    5    6    3    2
+3    4   16  225   30   15    4    3    4    2
+4    2   15   23  209   30   11    7    4    2
+5    4    8   15   25  161   54   21   13    2
+6    6    5    6   20   46  137   53   15   14
+7   13    3    8    6   22   55  123   59   14
+8    3    1    1    2    5   22   72  153   43
+9    1    4    3    0    7    6   12   49  221
