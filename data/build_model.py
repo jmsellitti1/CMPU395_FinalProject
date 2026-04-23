@@ -273,7 +273,6 @@ for X_batch, y_batch, pids_batch, team_batch, date_batch in val_team_loader:
         for player_idx, pos in enumerate(pred):
             pred_lineup[pos] = player_ids[player_idx]
 
-        # Save result
         lineup_results.append({
             "team": team_batch[b],
             "game_date": str(date_batch[b]),
@@ -315,7 +314,7 @@ importances.sort(key=lambda x: x[1], reverse=True)
 lineup_df = pd.DataFrame(lineup_results)
 lineup_df.to_parquet("data/predicted_lineups.parquet", index=False)
 lineup_df.head(100).to_csv("data/predicted_lineups_preview.csv", index=False)
-print("Predicted lineups saved to predicted_lineups.parquet")
+print("Predicted lineups saved to predicted_lineups.parquet\n")
 
 output = f"""PLAYER MODEL:
 Exact Accuracy: {player_top1:.4f}
