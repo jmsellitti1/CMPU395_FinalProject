@@ -4,8 +4,8 @@ import subprocess
 
 subprocess.run(["pip install -r requirements.txt"], shell=True, check=True)
 print()
-subprocess.run(["python3", "data/load_data.py"], check=True)
+subprocess.run(["python3", "scripts/load_data.py"], check=True)
 print()
-subprocess.run(["python3", "data/calculate_features.py"], check=True)
+subprocess.run(["python3", "scripts/calculate_features.py"], check=True)
 print()
-subprocess.run(["python3", "data/build_model.py"], check=True)
+subprocess.run(["python3", "scripts/build_model.py"], check=True)
